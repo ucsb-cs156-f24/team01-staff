@@ -1,0 +1,84 @@
+{
+    "databaseChangeLog": [
+      {
+        "changeSet": {
+          "id": "RecommendationRequests",
+          "author": "MattP",
+          "preConditions": [
+            {
+              "onFail": "MARK_RAN"
+            },
+            {
+              "not": [
+                {
+                  "tableExists": {
+                    "tableName": "RECOMMENDATIONREQUESTS"
+                  }
+                }
+              ]
+            }
+          ],
+          "changes": [
+            {
+              "createTable": {
+                "columns": [
+                  {
+                    "column": {
+                      "autoIncrement": true,
+                      "constraints": {
+                        "primaryKey": true,
+                        "primaryKeyName": "CONSTRAINT_5"
+                      },
+                      "name": "ID",
+                      "type": "BIGINT"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "REQUESTER_EMAIL",
+                      "type": "VARCHAR(255)"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "PROFESSOR_EMAIL",
+                      "type": "VARCHAR(255)"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "DATE_REQUESTED",
+                      "type": "TIMESTAMP"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "DATE_NEEDED",
+                      "type": "TIMESTAMP"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "NAME",
+                      "type": "VARCHAR(255)"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "DONE",
+                      "type": "BOOLEAN"
+                    }
+                  }
+                ],
+                "tableName": "RECOMMENDATIONREQUESTS"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+ 
+ 
+ 
+ 
