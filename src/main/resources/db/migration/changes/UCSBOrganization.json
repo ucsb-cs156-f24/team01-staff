@@ -11,7 +11,7 @@
             "not": [ 
               {
                 "tableExists": {
-                  "tableName": "UCSBORGANIZATIONS"
+                  "tableName": "UCSBORGANIZATION"
                 }
               }
             ]
@@ -50,7 +50,7 @@
                   }
                 }]
               ,
-              "tableName": "UCSBORGANIZATIONS"
+              "tableName": "UCSBORGANIZATION"
             }
           }]
         }
