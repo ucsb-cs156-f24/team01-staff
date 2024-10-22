@@ -47,6 +47,12 @@
                   },
                   {
                     "column": {
+                      "name": "EXPLANATION",
+                      "type": "VARCHAR(255)"
+                    }
+                  },
+                  {
+                    "column": {
                       "name": "DATE_REQUESTED",
                       "type": "TIMESTAMP"
                     }
@@ -55,12 +61,6 @@
                     "column": {
                       "name": "DATE_NEEDED",
                       "type": "TIMESTAMP"
-                    }
-                  },
-                  {
-                    "column": {
-                      "name": "NAME",
-                      "type": "VARCHAR(255)"
                     }
                   },
                   {
@@ -78,7 +78,4 @@
       }
     ]
   }
- 
- 
- 
- 
+  
