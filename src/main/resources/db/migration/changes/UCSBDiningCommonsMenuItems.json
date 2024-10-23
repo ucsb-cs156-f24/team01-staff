@@ -27,7 +27,7 @@
                       "autoIncrement": true,
                       "constraints": {
                         "primaryKey": true,
-                        "primaryKeyName": "UCSBDININGCOMMONSMENUITEMS_PK"
+                        "primaryKeyName": "UCSBDININGCOMMONSMENUITEMS_PK_PK"
                       },
                       "name": "ID",
                       "type": "BIGINT"
