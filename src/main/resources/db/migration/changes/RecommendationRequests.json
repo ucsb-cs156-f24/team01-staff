@@ -46,11 +46,11 @@
                     }
                   },
                   {
-                    "column": {
-                      "name": "EXPLANATION",
-                      "type": "VARCHAR(255)"
-                    }
-                  },
+                      "column": {
+                        "name": "EXPLANATION",
+                        "type": "VARCHAR(255)"
+                      }
+                    },
                   {
                     "column": {
                       "name": "DATE_REQUESTED",
