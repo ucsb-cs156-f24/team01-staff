@@ -18,7 +18,12 @@ import java.time.LocalDateTime;
 * This is a JPA entity that represents a UCSBDate, i.e. an entry
 * that comes from the UCSB API for academic calendar dates.
 */
+import lombok.Getter;
+import lombok.Setter;
+import lombok.Builder;
 
+@Getter
+@Setter
 
 @Data
 @AllArgsConstructor
@@ -36,4 +41,8 @@ public class RecommendationRequests {
  private LocalDateTime dateNeeded;
  private String name;
  private boolean done;
+
+ public boolean isDone() {
+    return done;
+ }
 }

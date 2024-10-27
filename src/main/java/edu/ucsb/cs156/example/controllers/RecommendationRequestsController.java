@@ -52,7 +52,7 @@ public class RecommendationRequestsController extends ApiController {
     }
 
     @Operation(summary = "Create a new recommendation request")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/post")
     public RecommendationRequests createRequest(
             @RequestParam String requesterEmail,
@@ -88,24 +88,23 @@ public class RecommendationRequestsController extends ApiController {
         return genericMessage("Recommendation request with ID %s deleted".formatted(id));
     }
 
-    @Operation(summary = "Update an existing recommendation request by ID")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("")
     public RecommendationRequests updateRequest(
-            @Parameter(name = "id") @RequestParam long id,
-            @RequestBody @Valid RecommendationRequests incomingRequest) {
+        @Parameter(name = "id") @RequestParam long id,
+        @RequestBody @Valid RecommendationRequests incomingRequest) {
 
-        RecommendationRequests request = recommendationRequestsRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(RecommendationRequests.class, id));
+    RecommendationRequests request = recommendationRequestsRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(RecommendationRequests.class, id));
 
-        request.setRequesterEmail(incomingRequest.getRequesterEmail());
-        request.setProfessorEmail(incomingRequest.getProfessorEmail());
-        request.setExplanation(incomingRequest.getExplanation());
-        request.setDateRequested(incomingRequest.getDateRequested());
-        request.setDateNeeded(incomingRequest.getDateNeeded());
-        request.setName(incomingRequest.getName());
-        request.setDone(incomingRequest.isDone());
+    request.setRequesterEmail(incomingRequest.getRequesterEmail());
+    request.setProfessorEmail(incomingRequest.getProfessorEmail());
+    request.setExplanation(incomingRequest.getExplanation());
+    request.setDateRequested(incomingRequest.getDateRequested());
+    request.setDateNeeded(incomingRequest.getDateNeeded());
+    request.setName(incomingRequest.getName());
+    request.setDone(incomingRequest.isDone());
 
-        return recommendationRequestsRepository.save(request);
+    return recommendationRequestsRepository.save(request); // Ensure this line returns the saved request
     }
+
 }
