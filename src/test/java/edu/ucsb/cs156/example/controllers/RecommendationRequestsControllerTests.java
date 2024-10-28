@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @WebMvcTest(controllers = RecommendationRequestsController.class)
@@ -40,7 +41,7 @@ public class RecommendationRequestsControllerTests extends ControllerTestCase {
     @Test
     public void logged_out_users_cannot_get_all() throws Exception {
         mockMvc.perform(get("/api/recommendationrequests/all"))
-               .andExpect(status().is(403));
+               .andExpect(status().is(403)); // logged out users can't get all
     }
 
     @WithMockUser(roles = { "USER" })
@@ -78,6 +79,12 @@ public class RecommendationRequestsControllerTests extends ControllerTestCase {
         assertEquals(expectedJson, responseString);
     }
 
+    @Test
+    public void logged_out_users_cannot_get_request_by_id() throws Exception {
+        mockMvc.perform(get("/api/recommendationrequests?id=1"))
+               .andExpect(status().is(403));
+    }
+
     @WithMockUser(roles = { "USER" })
     @Test
     public void user_can_get_request_by_id_when_id_exists() throws Exception {
@@ -101,6 +108,42 @@ public class RecommendationRequestsControllerTests extends ControllerTestCase {
         String responseString = response.getResponse().getContentAsString();
         assertEquals(expectedJson, responseString);
     }
+
+    @WithMockUser(roles = { "USER" })
+    @Test
+    public void user_cannot_get_request_by_id_when_id_does_not_exist() throws Exception {
+        when(recommendationRequestsRepository.findById(999L)).thenReturn(Optional.empty());
+
+        MvcResult response = mockMvc.perform(get("/api/recommendationrequests?id=999"))
+                                    .andExpect(status().isNotFound()).andReturn();
+
+        verify(recommendationRequestsRepository, times(1)).findById(999L);
+        Map<String, Object> json = responseToJson(response);
+        assertEquals("EntityNotFoundException", json.get("type"));
+        assertEquals("RecommendationRequests with id 999 not found", json.get("message"));
+    }
+
+    @Test
+    public void logged_out_users_cannot_create_request() throws Exception {
+        mockMvc.perform(post("/api/recommendationrequests/post"))
+               .andExpect(status().is(403));
+    }
+
+    @WithMockUser(roles = { "USER" })
+    @Test
+    public void logged_in_regular_users_cannot_create_request() throws Exception {
+        mockMvc.perform(post("/api/recommendationrequests/post")
+                .param("requesterEmail", "user@example.com")
+                .param("professorEmail", "prof@example.com")
+                .param("explanation", "Test explanation")
+                .param("dateRequested", LocalDateTime.now().toString())
+                .param("dateNeeded", LocalDateTime.now().plusDays(5).toString())
+                .param("name", "Test Request")
+                .param("done", "false")
+                .with(csrf()))
+                .andExpect(status().isForbidden()); 
+    }
+
 
     @WithMockUser(roles = { "ADMIN", "USER" })
     @Test
@@ -162,6 +205,20 @@ public class RecommendationRequestsControllerTests extends ControllerTestCase {
 
     @WithMockUser(roles = { "ADMIN", "USER" })
     @Test
+    public void admin_cannot_delete_request_when_id_does_not_exist() throws Exception {
+        when(recommendationRequestsRepository.findById(999L)).thenReturn(Optional.empty());
+
+        MvcResult response = mockMvc.perform(delete("/api/recommendationrequests?id=999").with(csrf()))
+                                    .andExpect(status().isNotFound()).andReturn();
+
+        verify(recommendationRequestsRepository, times(1)).findById(999L);
+        Map<String, Object> json = responseToJson(response);
+        assertEquals("EntityNotFoundException", json.get("type"));
+        assertEquals("RecommendationRequests with id 999 not found", json.get("message"));
+    }
+
+    @WithMockUser(roles = { "ADMIN", "USER" })
+    @Test
     public void admin_can_update_existing_request() throws Exception {
         RecommendationRequests originalRequest = RecommendationRequests.builder()
                 .requesterEmail("original@example.com")
@@ -172,8 +229,6 @@ public class RecommendationRequestsControllerTests extends ControllerTestCase {
                 .name("Original Request")
                 .done(false)
                 .build();
-        
-        //when(recommendationRequestsRepository.save(any(RecommendationRequests.class))).thenReturn(originalRequest);
 
         RecommendationRequests updatedRequest = RecommendationRequests.builder()
                 .requesterEmail("updated@example.com")
@@ -184,12 +239,11 @@ public class RecommendationRequestsControllerTests extends ControllerTestCase {
                 .name("Updated Request")
                 .done(true)
                 .build();
-        
-        when(recommendationRequestsRepository.save(any(RecommendationRequests.class))).thenReturn(updatedRequest);
 
         String requestBody = mapper.writeValueAsString(updatedRequest);
 
         when(recommendationRequestsRepository.findById(1L)).thenReturn(Optional.of(originalRequest));
+        when(recommendationRequestsRepository.save(any(RecommendationRequests.class))).thenReturn(updatedRequest);
 
         MvcResult response = mockMvc.perform(
                 put("/api/recommendationrequests?id=1")
@@ -199,8 +253,38 @@ public class RecommendationRequestsControllerTests extends ControllerTestCase {
                 .andExpect(status().isOk()).andReturn();
 
         verify(recommendationRequestsRepository, times(1)).findById(1L);
-        verify(recommendationRequestsRepository, times(1)).save(updatedRequest);
+        verify(recommendationRequestsRepository, times(1)).save(any(RecommendationRequests.class));
         String responseString = response.getResponse().getContentAsString();
         assertEquals(requestBody, responseString);
+    }
+
+    @WithMockUser(roles = { "ADMIN", "USER" })
+    @Test
+    public void admin_cannot_update_request_when_id_does_not_exist() throws Exception {
+        RecommendationRequests updatedRequest = RecommendationRequests.builder()
+                .requesterEmail("updated@example.com")
+                .professorEmail("prof@example.com")
+                .explanation("Updated explanation")
+                .dateRequested(LocalDateTime.now())
+                .dateNeeded(LocalDateTime.now().plusDays(7))
+                .name("Updated Request")
+                .done(true)
+                .build();
+
+        String requestBody = mapper.writeValueAsString(updatedRequest);
+
+        when(recommendationRequestsRepository.findById(999L)).thenReturn(Optional.empty());
+
+        MvcResult response = mockMvc.perform(
+                put("/api/recommendationrequests?id=999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                        .with(csrf()))
+                .andExpect(status().isNotFound()).andReturn();
+
+        verify(recommendationRequestsRepository, times(1)).findById(999L);
+        Map<String, Object> json = responseToJson(response);
+        assertEquals("EntityNotFoundException", json.get("type"));
+        assertEquals("RecommendationRequests with id 999 not found", json.get("message"));
     }
 }
