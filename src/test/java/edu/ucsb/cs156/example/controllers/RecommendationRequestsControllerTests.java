@@ -254,7 +254,7 @@ public class RecommendationRequestsControllerTests extends ControllerTestCase {
 
                 // assert
                 verify(recommendationRequestRepository, times(1)).findById(67L);
-                verify(recommendationRequestRepository, times(1)).save(recRequestEdited); // should be saved with correct user
+                verify(recommendationRequestRepository, times(1)).save(recRequestEdited); 
                 String responseString = response.getResponse().getContentAsString();
                 assertEquals(requestBody, responseString);
         }
