@@ -31,24 +31,24 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 
 /**
- * This is a REST controller for req requests
+ * REST controller for managing recommendation requests.
+ * Provides endpoints to create, read, update, and delete recommendation requests.
  */
-
- @Tag(name = "RecommendationRequests")
- @RequestMapping("/api/recommendationrequests")
- @RestController
- @Slf4j
-
+@Tag(name = "RecommendationRequests")
+@RequestMapping("/api/recommendationrequests")
+@RestController
+@Slf4j
 public class RecommendationRequestsController extends ApiController {
+
     @Autowired
     RecommendationRequestRepository recommendationRequestRepository;
 
     /**
-     * List all recommendation requests
+     * List all recommendation requests.
      * 
-     * @return an iterable of rec req
+     * @return all recommendation requests in the system.
      */
-    @Operation(summary= "List all recommendation reqs")
+    @Operation(summary = "List all recommendation requests")
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/all")
     public Iterable<RecommendationRequest> allRecommendationRequests() {
@@ -57,47 +57,47 @@ public class RecommendationRequestsController extends ApiController {
     }
 
     /**
-     * Get a single request by id
+     * Retrieve a single recommendation request by ID.
      * 
-     * @param id the id of the rec req
-     * @return a recommendation request
+     * @param id the ID of the recommendation request to retrieve.
+     * @return the recommendation request with the specified ID.
+     * @throws EntityNotFoundException if no recommendation request with the given ID is found.
      */
-    @Operation(summary= "Get a single recommendation request")
+    @Operation(summary = "Get a single recommendation request by ID")
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("")
     public RecommendationRequest getById(
-            @Parameter(name="id") @RequestParam Long id) {
+            @Parameter(name = "id") @RequestParam Long id) {
         RecommendationRequest recommendationRequest = recommendationRequestRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(RecommendationRequest.class, id));
-
         return recommendationRequest;
     }
 
     /**
-     * Create a new rec req
+     * Create a new recommendation request.
      * 
-     * @param String requesterEmail;
-     * @param String professorEmail;
-    * @param String explanation;
-    * @param LocalDateTime dateRequested;
-    * @param LocalDateTime dateNeeded;
-    * @param boolean done;
-     * @return the saved recommendation req
+     * @param requesterEmail the email of the requester.
+     * @param professorEmail the email of the professor.
+     * @param explanation a brief explanation for the recommendation request.
+     * @param dateRequested the date when the recommendation was requested.
+     * @param dateNeeded the date by which the recommendation is needed.
+     * @param done whether the recommendation request is completed.
+     * @return the created recommendation request.
+     * @throws JsonProcessingException if there is an error processing JSON input.
      */
-    @Operation(summary= "Create a new rec req")
+    @Operation(summary = "Create a new recommendation request")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/post")
     public RecommendationRequest postRecommendationRequest(
-            @Parameter(name="requesterEmail") @RequestParam String requesterEmail,
-            @Parameter(name="professorEmail") @RequestParam String professorEmail,
-            @Parameter(name="explanation") @RequestParam String explanation,
-            @Parameter(name="dateRequested", description="date (in iso format, e.g. YYYY-mm-ddTHH:MM:SS; see https://en.wikipedia.org/wiki/ISO_8601)") @RequestParam("dateRequested") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateRequested,
-            @Parameter(name="dateNeeded", description="date (in iso format, e.g. YYYY-mm-ddTHH:MM:SS; see https://en.wikipedia.org/wiki/ISO_8601)") @RequestParam("dateNeeded") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateNeeded,
-            @Parameter(name="done") @RequestParam boolean done)
+            @Parameter(name = "requesterEmail") @RequestParam String requesterEmail,
+            @Parameter(name = "professorEmail") @RequestParam String professorEmail,
+            @Parameter(name = "explanation") @RequestParam String explanation,
+            @Parameter(name = "dateRequested", description = "Date in ISO format (e.g., YYYY-MM-DDTHH:MM:SS)") 
+            @RequestParam("dateRequested") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateRequested,
+            @Parameter(name = "dateNeeded", description = "Date in ISO format (e.g., YYYY-MM-DDTHH:MM:SS)") 
+            @RequestParam("dateNeeded") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateNeeded,
+            @Parameter(name = "done") @RequestParam boolean done)
             throws JsonProcessingException {
-
-        // For an explanation of @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        // See: https://www.baeldung.com/spring-date-parameters
 
         log.info("dateRequested={}", dateRequested);
         log.info("dateNeeded={}", dateNeeded);
@@ -110,61 +110,53 @@ public class RecommendationRequestsController extends ApiController {
         recommendationRequest.setDateRequested(dateRequested);
         recommendationRequest.setDone(done);
 
-        RecommendationRequest savedRecommendationRequest = recommendationRequestRepository.save(recommendationRequest);
-
-        return savedRecommendationRequest;
+        return recommendationRequestRepository.save(recommendationRequest);
     }
-    
-    /**
-     * Update a single rec req
-     * 
-     * @param String requesterEmail;
-     * @param String professorEmail;
-     * @param String explanation;
-     * @param LocalDateTime dateRequested;
-     * @param LocalDateTime dateNeeded;
-     * @param boolean done;
-     * @return the saved recommendation req
 
+    /**
+     * Update an existing recommendation request by ID.
+     * 
+     * @param id the ID of the recommendation request to update.
+     * @param incoming the updated recommendation request details.
+     * @return the updated recommendation request.
+     * @throws EntityNotFoundException if no recommendation request with the given ID is found.
      */
-    @Operation(summary= "Update a single Recommendation Request")
+    @Operation(summary = "Update a single recommendation request by ID")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("")
     public RecommendationRequest updateRecommendationRequest(
-            @Parameter(name="id") @RequestParam Long id,
+            @Parameter(name = "id") @RequestParam Long id,
             @RequestBody @Valid RecommendationRequest incoming) {
 
         RecommendationRequest recommendationRequest = recommendationRequestRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(RecommendationRequest.class, id));
 
-                recommendationRequest.setRequesterEmail(incoming.getRequesterEmail());
-                recommendationRequest.setProfessorEmail(incoming.getProfessorEmail());
-                recommendationRequest.setExplanation(incoming.getExplanation());
-                recommendationRequest.setDateNeeded(incoming.getDateNeeded());
-                recommendationRequest.setDateRequested(incoming.getDateRequested());
-                recommendationRequest.setDone(incoming.getDone());
-        
-                recommendationRequestRepository.save(recommendationRequest);
-        
-                return recommendationRequest;
-            }
+        recommendationRequest.setRequesterEmail(incoming.getRequesterEmail());
+        recommendationRequest.setProfessorEmail(incoming.getProfessorEmail());
+        recommendationRequest.setExplanation(incoming.getExplanation());
+        recommendationRequest.setDateNeeded(incoming.getDateNeeded());
+        recommendationRequest.setDateRequested(incoming.getDateRequested());
+        recommendationRequest.setDone(incoming.getDone());
+
+        return recommendationRequestRepository.save(recommendationRequest);
+    }
 
     /**
-     * Delete a Recommendation Request
+     * Delete a recommendation request by ID.
      * 
-     * @param id the id of the rec request to delete
-     * @return a message indicating the req request was deleted
+     * @param id the ID of the recommendation request to delete.
+     * @return a message indicating that the recommendation request was deleted.
+     * @throws EntityNotFoundException if no recommendation request with the given ID is found.
      */
-    @Operation(summary= "Delete a Recommendation Request")
+    @Operation(summary = "Delete a recommendation request by ID")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("")
     public Object deleteRecommendationRequest(
-            @Parameter(name="id") @RequestParam Long id) {
+            @Parameter(name = "id") @RequestParam Long id) {
         RecommendationRequest recRequest = recommendationRequestRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(RecommendationRequest.class, id));
 
         recommendationRequestRepository.delete(recRequest);
         return genericMessage("RecommendationRequest with id %s deleted".formatted(id));
     }
-
 }
