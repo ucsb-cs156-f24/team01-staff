@@ -122,7 +122,6 @@ public class RecommendationRequestsControllerTests extends ControllerTestCase {
         assertEquals("EntityNotFoundException", json.get("type"));
         assertEquals("RecommendationRequests with id 999 not found", json.get("message"));
     }
-
     @Test
     public void logged_out_users_cannot_create_request() throws Exception {
         mockMvc.perform(post("/api/recommendationrequests/post"))

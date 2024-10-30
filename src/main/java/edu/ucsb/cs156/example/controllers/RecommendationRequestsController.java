@@ -1,14 +1,11 @@
 package edu.ucsb.cs156.example.controllers;
-
 import edu.ucsb.cs156.example.entities.RecommendationRequests;
 import edu.ucsb.cs156.example.errors.EntityNotFoundException;
 import edu.ucsb.cs156.example.repositories.RecommendationRequestsRepository;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -87,7 +84,6 @@ public class RecommendationRequestsController extends ApiController {
         recommendationRequestsRepository.delete(request);
         return genericMessage("Recommendation request with ID %s deleted".formatted(id));
     }
-
     @PutMapping("")
     public RecommendationRequests updateRequest(
         @Parameter(name = "id") @RequestParam long id,
