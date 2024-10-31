@@ -34,21 +34,21 @@ import java.time.ZonedDateTime;
  * This is a REST controller for Commits
  */
 
- @Tag(name = "Commits")
- @RequestMapping("/api/commits")
- @RestController
- @Slf4j
+@Tag(name = "Commits")
+@RequestMapping("/api/commits")
+@RestController
+@Slf4j
 public class CommitsController extends ApiController {
-    
+
     @Autowired
     CommitRepository commitRepository;
 
-     /**
+    /**
      * List all Commits
      * 
      * @return an iterable of Commits
      */
-    @Operation(summary= "List all commits")
+    @Operation(summary = "List all commits")
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/all")
     public Iterable<Commit> allCommits() {
@@ -56,23 +56,23 @@ public class CommitsController extends ApiController {
         return commits;
     }
 
-     /**
+    /**
      * Create a new commit
      * 
-     * @param message  the commit message
-     * @param url the commit url 
+     * @param message     the commit message
+     * @param url         the commit url
      * @param authorLogin the github login id of the user that authored the commit
-     * @param commitTime the timestamp on the commit, with time zone information
+     * @param commitTime  the timestamp on the commit, with time zone information
      * @return the saved commit
      */
-    @Operation(summary= "Create a new commit")
+    @Operation(summary = "Create a new commit")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/post")
     public Commit postCommit(
-            @Parameter(name="message") @RequestParam String message,
-            @Parameter(name="url") @RequestParam String url,
-            @Parameter(name="authorLogin") @RequestParam String authorLogin,
-            @Parameter(name="commitTime") @RequestParam("commitTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime commitTime)
+            @Parameter(name = "message") @RequestParam String message,
+            @Parameter(name = "url") @RequestParam String url,
+            @Parameter(name = "authorLogin") @RequestParam String authorLogin,
+            @Parameter(name = "commitTime") @RequestParam("commitTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime commitTime)
             throws JsonProcessingException {
 
         // For an explanation of @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -89,6 +89,23 @@ public class CommitsController extends ApiController {
         Commit savedCommit = commitRepository.save(commit);
 
         return savedCommit;
+    }
+
+    /**
+     * Get a single commit by id
+     * 
+     * @param id the id of the commit
+     * @return a Commit
+     */
+    @Operation(summary = "Get a single commit")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("")
+    public Commit getById(
+            @Parameter(name = "id") @RequestParam Long id) {
+        Commit commit = commitRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(Commit.class, id));
+
+        return commit;
     }
 
 }
