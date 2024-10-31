@@ -139,4 +139,61 @@ public class CommitsControllerTests extends ControllerTestCase  {
             assertEquals(expectedJson, responseString);
     }
 
+    @Test
+    public void logged_out_users_cannot_get_by_id() throws Exception {
+            mockMvc.perform(get("/api/commits?id=7"))
+                            .andExpect(status().is(403)); // logged out users can't get by id
+    }
+
+    @WithMockUser(roles = { "USER" })
+    @Test
+    public void test_that_logged_in_user_can_get_by_id_when_the_id_does_exist() throws Exception {
+
+            // arrange
+
+            ZonedDateTime zdt1 = ZonedDateTime.parse("2022-01-03T00:00:00Z");
+
+            Commit commit1 = Commit.builder()
+            .url("https://github.com/ucsb-cs156-f24/STARTER-team02/commit/e107dcbce881afa1ea70ebc93c8dfb91cebb8630")
+            .message("pc-updated")
+            .authorLogin("pconrad")
+            .commitTime(zdt1)
+            .build();
+
+            when(commitRepository.findById(eq(7L))).thenReturn(Optional.of(commit1));
+
+            // act
+            MvcResult response = mockMvc.perform(get("/api/commits?id=7"))
+                            .andExpect(status().isOk()).andReturn();
+
+            // assert
+
+            verify(commitRepository, times(1)).findById(eq(7L));
+            String expectedJson = mapper.writeValueAsString(commit1);
+            String responseString = response.getResponse().getContentAsString();
+            assertEquals(expectedJson, responseString);
+
+    }
+
+    @WithMockUser(roles = { "USER" })
+    @Test
+    public void test_that_logged_in_user_can_get_by_id_when_the_id_does_not_exist() throws Exception {
+
+            // arrange
+
+            when(commitRepository.findById(eq(7L))).thenReturn(Optional.empty());
+
+            // act
+            MvcResult response = mockMvc.perform(get("/api/commits?id=7"))
+                            .andExpect(status().isNotFound()).andReturn();
+
+            // assert
+
+            verify(commitRepository, times(1)).findById(eq(7L));
+            Map<String, Object> json = responseToJson(response);
+            assertEquals("EntityNotFoundException", json.get("type"));
+            assertEquals("Commit with id 7 not found", json.get("message"));
+    }
+
+
 }
