@@ -108,4 +108,31 @@ public class CommitsController extends ApiController {
         return commit;
     }
 
+     /**
+     * Update a single commit
+     * 
+     * @param id       id of the commit to update
+     * @param incoming the new commit
+     * @return the updated commit object
+     */
+    @Operation(summary= "Update a single commit")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("")
+    public Commit updateCommit(
+            @Parameter(name="id") @RequestParam Long id,
+            @RequestBody @Valid Commit incoming) {
+
+        Commit commit = commitRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(Commit.class, id));
+
+        commit.setAuthorLogin(incoming.getAuthorLogin());
+        commit.setCommitTime(incoming.getCommitTime());
+        commit.setMessage(incoming.getMessage());
+        commit.setUrl(incoming.getUrl());
+       
+        commitRepository.save(commit);
+
+        return commit;
+    }
+
 }
