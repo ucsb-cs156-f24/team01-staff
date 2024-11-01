@@ -195,5 +195,84 @@ public class CommitsControllerTests extends ControllerTestCase  {
             assertEquals("Commit with id 7 not found", json.get("message"));
     }
 
+    @WithMockUser(roles = { "ADMIN", "USER" })
+    @Test
+    public void admin_can_edit_an_existing_commit() throws Exception {
+            // arrange
+
+            ZonedDateTime zdt1 = ZonedDateTime.parse("2022-01-03T00:00:00Z");
+            ZonedDateTime zdt2 = ZonedDateTime.parse("2022-01-04T00:00:00Z");
+
+
+            Commit commit1 = Commit.builder()
+            .url("https://github.com/ucsb-cs156-f24/STARTER-team02/commit/e107dcbce881afa1ea70ebc93c8dfb91cebb8630")
+            .message("pc-updated")
+            .authorLogin("pconrad")
+            .commitTime(zdt1)
+            .build();
+
+
+            Commit editedCommit = Commit.builder()
+            .url("https://github.com/ucsb-cs156-f24/STARTER-team01/commit/e107dcbce881afa1ea70ebc93c8dfb91cebb8630")
+            .message("pc-new-message")
+            .authorLogin("cgaucho")
+            .commitTime(zdt2)
+            .build();
+           
+
+            String requestBody = mapper.writeValueAsString(editedCommit);
+
+            when(commitRepository.findById(eq(67L))).thenReturn(Optional.of(commit1));
+
+            // act
+            MvcResult response = mockMvc.perform(
+                            put("/api/commits?id=67")
+                                            .contentType(MediaType.APPLICATION_JSON)
+                                            .characterEncoding("utf-8")
+                                            .content(requestBody)
+                                            .with(csrf()))
+                            .andExpect(status().isOk()).andReturn();
+
+            // assert
+            verify(commitRepository, times(1)).findById(67L);
+            verify(commitRepository, times(1)).save(editedCommit); 
+            String responseString = response.getResponse().getContentAsString();
+            assertEquals(requestBody, responseString);
+    }
+
+    @WithMockUser(roles = { "ADMIN", "USER" })
+    @Test
+    public void admin_cannot_edit_commit_that_does_not_exist() throws Exception {
+            // arrange
+
+            ZonedDateTime zdt1 = ZonedDateTime.parse("2022-01-03T00:00:00Z");
+
+            Commit commit1 = Commit.builder()
+            .url("https://github.com/ucsb-cs156-f24/STARTER-team02/commit/e107dcbce881afa1ea70ebc93c8dfb91cebb8630")
+            .message("pc-updated")
+            .authorLogin("pconrad")
+            .commitTime(zdt1)
+            .build();
+
+          
+            String requestBody = mapper.writeValueAsString(commit1);
+
+            when(commitRepository.findById(eq(67L))).thenReturn(Optional.empty());
+
+            // act
+            MvcResult response = mockMvc.perform(
+                            put("/api/commits?id=67")
+                                            .contentType(MediaType.APPLICATION_JSON)
+                                            .characterEncoding("utf-8")
+                                            .content(requestBody)
+                                            .with(csrf()))
+                            .andExpect(status().isNotFound()).andReturn();
+
+            // assert
+            verify(commitRepository, times(1)).findById(67L);
+            Map<String, Object> json = responseToJson(response);
+            assertEquals("Commit with id 67 not found", json.get("message"));
+
+    }
 
 }
