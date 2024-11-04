@@ -275,4 +275,55 @@ public class CommitsControllerTests extends ControllerTestCase  {
 
     }
 
+    @WithMockUser(roles = { "ADMIN", "USER" })
+    @Test
+    public void admin_can_delete_a_commit() throws Exception {
+            // arrange
+
+            ZonedDateTime zdt1 = ZonedDateTime.parse("2022-01-03T00:00:00Z");
+
+            Commit commit1 = Commit.builder()
+            .url("https://github.com/ucsb-cs156-f24/STARTER-team02/commit/e107dcbce881afa1ea70ebc93c8dfb91cebb8630")
+            .message("pc-updated")
+            .authorLogin("pconrad")
+            .commitTime(zdt1)
+            .build();
+
+            when(commitRepository.findById(eq(15L))).thenReturn(Optional.of(commit1));
+
+            // act
+            MvcResult response = mockMvc.perform(
+                            delete("/api/commits?id=15")
+                                            .with(csrf()))
+                            .andExpect(status().isOk()).andReturn();
+
+            // assert
+            verify(commitRepository, times(1)).findById(15L);
+            verify(commitRepository, times(1)).delete(eq(commit1));
+
+            Map<String, Object> json = responseToJson(response);
+            assertEquals("Commit with id 15 deleted", json.get("message"));
+    }
+
+    @WithMockUser(roles = { "ADMIN", "USER" })
+    @Test
+    public void admin_tries_to_delete_non_existant_commit_and_gets_right_error_message()
+                    throws Exception {
+            // arrange
+
+            when(commitRepository.findById(eq(15L))).thenReturn(Optional.empty());
+
+            // act
+            MvcResult response = mockMvc.perform(
+                            delete("/api/commits?id=15")
+                                            .with(csrf()))
+                            .andExpect(status().isNotFound()).andReturn();
+
+            // assert
+            verify(commitRepository, times(1)).findById(15L);
+            Map<String, Object> json = responseToJson(response);
+            assertEquals("Commit with id 15 not found", json.get("message"));
+    }
+
+
 }
