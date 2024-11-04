@@ -108,18 +108,18 @@ public class CommitsController extends ApiController {
         return commit;
     }
 
-     /**
+    /**
      * Update a single commit
      * 
      * @param id       id of the commit to update
      * @param incoming the new commit
      * @return the updated commit object
      */
-    @Operation(summary= "Update a single commit")
+    @Operation(summary = "Update a single commit")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("")
     public Commit updateCommit(
-            @Parameter(name="id") @RequestParam Long id,
+            @Parameter(name = "id") @RequestParam Long id,
             @RequestBody @Valid Commit incoming) {
 
         Commit commit = commitRepository.findById(id)
@@ -129,10 +129,28 @@ public class CommitsController extends ApiController {
         commit.setCommitTime(incoming.getCommitTime());
         commit.setMessage(incoming.getMessage());
         commit.setUrl(incoming.getUrl());
-       
+
         commitRepository.save(commit);
 
         return commit;
+    }
+
+    /**
+     * Delete a Commit
+     * 
+     * @param id the id of the commit to delete
+     * @return a message indicating the commit was deleted
+     */
+    @Operation(summary = "Delete a Commit")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @DeleteMapping("")
+    public Object deleteUCSBDate(
+            @Parameter(name = "id") @RequestParam Long id) {
+        Commit commit = commitRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(Commit.class, id));
+
+        commitRepository.delete(commit);
+        return genericMessage("Commit with id %s deleted".formatted(id));
     }
 
 }
