@@ -1,0 +1,68 @@
+{
+    "databaseChangeLog": [
+      {
+        "changeSet": {
+          "id": "Commits-1",
+          "author": "pconrad",
+          "preConditions": [
+            {
+              "onFail": "MARK_RAN"
+            },
+            {
+              "not": [
+                {
+                  "tableExists": {
+                    "tableName": "COMMITS"
+                  }
+                }
+              ]
+            }
+          ],
+          "changes": [
+            {
+              "createTable": {
+                "columns": [
+                  {
+                    "column": {
+                      "autoIncrement": true,
+                      "constraints": {
+                        "primaryKey": true,
+                        "primaryKeyName": "COMMITS_PK"
+                      },
+                      "name": "ID",
+                      "type": "BIGINT"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "MESSAGE",
+                      "type": "VARCHAR(255)"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "URL",
+                      "type": "VARCHAR(255)"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "AUTHOR_LOGIN",
+                      "type": "VARCHAR(255)"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "COMMIT_TIME",
+                      "type": "TIMESTAMP WITH TIME ZONE"
+                    }
+                  }
+                ],
+                "tableName": "COMMITS"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
